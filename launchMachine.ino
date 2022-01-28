@@ -39,7 +39,7 @@ void setup() {
   // use too much power, Teensy at least completes USB enumeration, which
   // makes isolating the power issue easier.
   delay(1500);
-  Serial.println("USB Host InputFunctions example");
+  //Serial.println("USB Host InputFunctions example");
   delay(10);
   myusb.begin();
   midi1.setHandleNoteOn(myNoteOn);
@@ -51,7 +51,7 @@ void setup() {
   if (!(SD.begin(SDCARD_CS_PIN))) {
     // stop here, but print a message repetitively
     while (1) {
-      Serial.println("Unable to access the SD card");
+      //Serial.println("Unable to access the SD card");
       delay(500);
     }
   }
@@ -71,26 +71,28 @@ void setup() {
 void loop() {
   stepclock = stepclock+1;
   if (stepclock == 20) {
-    currentstep = currentstep + 1;
-    if (stepdone == false) {
-      for (int y=0; y<8; y++) {
-       if (steps[currentstep-1][y] == 1) {
-         playFile("KICK.WAV");
-       }
-      }
+    
+    for (int y=0; y<8; y++) {
+     if (steps[currentstep][y] == 1) {
+       playFile("KICK.WAV");
+     }
+    }
 
-    }
-    if (currentstep >= 9) {
+    Serial.println(currentstep);
+
+    if (currentstep == 7) {
       currentstep = 0;
+    } else {
+      currentstep = currentstep + 1;
     }
+    
     stepclock = 0;
   }
-  Serial.println(currentstep);
    
   myusb.Task();
   midi1.read();
-  for (int x=0; x<8; x++) {
-    for (int y=0; y<8; y++) {
+  for (int x=0; x<=7; x++) {
+    for (int y=0; y<=7; y++) {
       int note = x + (y*10 + 10) +1;
       if (steps[x][y] != 0) {
         midi1.sendNoteOn(note, steps[x][y]*20, 1);
@@ -124,8 +126,8 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   int x = note - ((floor(note/10)) * 10) - 1;
   int y = ((floor(note/10)) * 10 - 10)/10;
   
-  Serial.println(x);
-  Serial.println(y);
+  //Serial.println(x);
+  //Serial.println(y);
   
   if (steps[x][y] == 0){
    steps[x][y] = 1;   
@@ -135,13 +137,13 @@ void myNoteOn(byte channel, byte note, byte velocity) {
     steps[x][y] = 0;  
   }
   
-  Serial.println((steps[x][y]));
+  //Serial.println((steps[x][y]));
 }
 
 void playFile(const char *filename)
 {
-  Serial.print("Playing file: ");
-  Serial.println(filename);
+  //Serial.print("Playing file: ");
+  //Serial.println(filename);
 
   // Start playing the file.  This sketch continues to
   // run while the file plays.
