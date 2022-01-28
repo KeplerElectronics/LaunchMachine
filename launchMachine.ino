@@ -27,22 +27,13 @@ AudioControlSGTL5000     sgtl5000_1;
 //choosing int array so we can store probability potentially in the future
 int steps [8][8];
 
-int currentstep = 0;
+int stepclock = 0;
+int currentstep = 1;
+bool stepdone = false;
 
 
 void setup() {
   Serial.begin(115200);
-
-  
-  // Audio connections require memory to work.  For more
-  // detailed information, see the MemoryAndCpuUsage example
-  AudioMemory(8);
-
-  // Comment these out if not using the audio adaptor board.
-  // This may wait forever if the SDA & SCL pins lack
-  // pullup resistors
-  sgtl5000_1.enable();
-  sgtl5000_1.volume(0.5);
 
   // Wait 1.5 seconds before turning on USB Host.  If connected USB devices
   // use too much power, Teensy at least completes USB enumeration, which
@@ -64,9 +55,38 @@ void setup() {
       delay(500);
     }
   }
+
+    
+  // Audio connections require memory to work.  For more
+  // detailed information, see the MemoryAndCpuUsage example
+  AudioMemory(8);
+
+  // Comment these out if not using the audio adaptor board.
+  // This may wait forever if the SDA & SCL pins lack
+  // pullup resistors
+  sgtl5000_1.enable();
+  sgtl5000_1.volume(0.5);
 }
 
 void loop() {
+  stepclock = stepclock+1;
+  if (stepclock == 20) {
+    currentstep = currentstep + 1;
+    if (stepdone == false) {
+      for (int y=0; y<8; y++) {
+       if (steps[currentstep-1][y] == 1) {
+         playFile("KICK.WAV");
+       }
+      }
+
+    }
+    if (currentstep >= 9) {
+      currentstep = 0;
+    }
+    stepclock = 0;
+  }
+  Serial.println(currentstep);
+   
   myusb.Task();
   midi1.read();
   for (int x=0; x<8; x++) {
@@ -74,7 +94,6 @@ void loop() {
       int note = x + (y*10 + 10) +1;
       if (steps[x][y] != 0) {
         midi1.sendNoteOn(note, steps[x][y]*20, 1);
-        playFile("KICK.WAV");  // filenames are always uppercase 8.3 format
       } else {
         midi1.sendNoteOn(note, 0, 1);
       }
@@ -94,12 +113,12 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   // When a USB device with multiple virtual cables is used,
   // midi1.getCable() can be used to read which of the virtual
   // MIDI cables received this message.
-  Serial.print("Note On, ch=");
+  /*Serial.print("Note On, ch=");
   Serial.print(channel, DEC);
   Serial.print(", note=");
   Serial.print(note, DEC);
   Serial.print(", velocity=");
-  Serial.println(velocity, DEC);
+  Serial.println(velocity, DEC);*/
 
   //breaking these conversion statements somehow crashes the serial output, not sure how, it just does
   int x = note - ((floor(note/10)) * 10) - 1;
@@ -129,7 +148,7 @@ void playFile(const char *filename)
   playWav1.play(filename);
 
   // A brief delay for the library read WAV info
-  delay(25);
+  //delay(25);
 
   // Simply wait for the file to finish playing.
   //while (playWav1.isPlaying()) {
@@ -143,19 +162,19 @@ void playFile(const char *filename)
 
 
 void myNoteOff(byte channel, byte note, byte velocity) {
-  Serial.print("Note Off, ch=");
+  /*Serial.print("Note Off, ch=");
   Serial.print(channel, DEC);
   Serial.print(", note=");
   Serial.print(note, DEC);
   Serial.print(", velocity=");
-  Serial.println(velocity, DEC);
+  Serial.println(velocity, DEC);*/
 }
 
 void myControlChange(byte channel, byte control, byte value) {
-  Serial.print("Control Change, ch=");
+  /*Serial.print("Control Change, ch=");
   Serial.print(channel, DEC);
   Serial.print(", control=");
   Serial.print(control, DEC);
   Serial.print(", value=");
-  Serial.println(value, DEC);
+  Serial.println(value, DEC);*/
 }
