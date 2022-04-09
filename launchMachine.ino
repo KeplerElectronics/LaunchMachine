@@ -30,6 +30,7 @@ int steps [8][8];
 int stepclock = 0;
 int currentstep = 1;
 bool stepdone = false;
+bool stepchance = false;
 
 
 void setup() {
@@ -70,15 +71,28 @@ void setup() {
 
 void loop() {
   stepclock = stepclock+1;
-  if (stepclock == 20) {
+  if (stepclock == 50) {
     
     for (int y=0; y<8; y++) {
      if (steps[currentstep][y] == 1) {
-       playFile("KICK.WAV");
+      //if (stepchance == 0) {
+       pickclip(y);    
+      //}
+     } else if (steps[currentstep][y] == 2) {
+       if (stepchance == true) {
+        pickclip(y);
+       }
      }
     }
+    if (currentstep == 7){
+      if (stepchance == true) {
+        stepchance = false;
+      } else if (stepchance == false){
+        stepchance = true;
+      }
+    }
 
-    Serial.println(currentstep);
+    Serial.println(stepchance);
 
     if (currentstep == 7) {
       currentstep = 0;
@@ -109,7 +123,25 @@ void loop() {
     ex: 11 to 18 are the pads, with 19 as the arrow key
 */
 
-
+void pickclip(byte inst){
+  if (inst == 0) {
+    playFile("KICK.WAV");   
+  } else if (inst == 1) {
+    playFile("SNARE.WAV");   
+  } else if (inst == 2) {
+    playFile("OHAT.WAV");   
+  } else if (inst == 3) {
+    playFile("CHAT.WAV");   
+  } else if (inst == 4) {
+    playFile("KICK.WAV");   
+  } else if (inst == 5) {
+    playFile("HTOM.WAV");   
+  } else if (inst == 6) {
+    playFile("MTOM.WAV");   
+  } else if (inst == 7) {
+    playFile("LTOM.WAV");   
+  }
+}
 
 void myNoteOn(byte channel, byte note, byte velocity) {
   // When a USB device with multiple virtual cables is used,
