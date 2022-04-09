@@ -11,12 +11,49 @@ MIDIDevice midi1(myusb);
 #include <SD.h>
 #include <SerialFlash.h>
 
+AudioPlaySdWav           playWav6; //xy=199,461
+AudioPlaySdWav           playWav7; //xy=200,494
+AudioPlaySdWav           playWav4; //xy=202,387
+AudioPlaySdWav           playWav5; //xy=202,421
+AudioPlaySdWav           playWav3; //xy=204,336
+AudioPlaySdWav           playWav8; //xy=204,532
+AudioPlaySdWav           playWav2; //xy=206,293
+AudioPlaySdWav           playWav1; //xy=209,253
+AudioMixer4              mixer4; //xy=407,510
+AudioMixer4              mixer2; //xy=414,344
+AudioMixer4              mixer3; //xy=414,419
+AudioMixer4              mixer1;         //xy=416,274
+AudioMixer4              mixer5; //xy=630,386
+AudioOutputI2S           i2s1;           //xy=797,402
+AudioConnection          patchCord1(playWav6, 0, mixer3, 2);
+AudioConnection          patchCord2(playWav6, 1, mixer3, 3);
+AudioConnection          patchCord3(playWav7, 0, mixer4, 0);
+AudioConnection          patchCord4(playWav7, 1, mixer4, 1);
+AudioConnection          patchCord5(playWav4, 0, mixer2, 2);
+AudioConnection          patchCord6(playWav4, 1, mixer2, 3);
+AudioConnection          patchCord7(playWav5, 0, mixer3, 0);
+AudioConnection          patchCord8(playWav5, 1, mixer3, 1);
+AudioConnection          patchCord9(playWav3, 0, mixer2, 0);
+AudioConnection          patchCord10(playWav3, 1, mixer2, 1);
+AudioConnection          patchCord11(playWav8, 0, mixer4, 2);
+AudioConnection          patchCord12(playWav8, 1, mixer4, 3);
+AudioConnection          patchCord13(playWav2, 0, mixer1, 2);
+AudioConnection          patchCord14(playWav2, 1, mixer1, 3);
+AudioConnection          patchCord15(playWav1, 0, mixer1, 0);
+AudioConnection          patchCord16(playWav1, 1, mixer1, 1);
+AudioConnection          patchCord17(mixer4, 0, mixer5, 3);
+AudioConnection          patchCord18(mixer2, 0, mixer5, 1);
+AudioConnection          patchCord19(mixer3, 0, mixer5, 2);
+AudioConnection          patchCord20(mixer1, 0, mixer5, 0);
+AudioConnection          patchCord21(mixer5, 0, i2s1, 0);
+AudioConnection          patchCord22(mixer5, 0, i2s1, 1);
 
+/*
 AudioPlaySdWav           playWav1;
 // Use one of these 3 output types: Digital I2S, Digital S/PDIF, or Analog DAC
 AudioOutputI2S           audioOutput;
 AudioConnection          patchCord1(playWav1, 0, audioOutput, 0);
-AudioConnection          patchCord2(playWav1, 1, audioOutput, 1);
+AudioConnection          patchCord2(playWav1, 1, audioOutput, 1);*/
 AudioControlSGTL5000     sgtl5000_1;
 
 #define SDCARD_CS_PIN    10
@@ -25,13 +62,12 @@ AudioControlSGTL5000     sgtl5000_1;
 
 
 //choosing int array so we can store probability potentially in the future
-int steps [8][8];
-
-int stepclock = 0;
-int currentstep = 1;
+byte steps [8][8];
+byte stepclock = 0;
+byte currentstep = 1;
+byte lastread = 0;
 bool stepdone = false;
 bool stepchance = false;
-
 
 void setup() {
   Serial.begin(115200);
@@ -71,36 +107,38 @@ void setup() {
 
 void loop() {
   stepclock = stepclock+1;
-  if (stepclock == 50) {
-    
+  byte current;
+  current = digitalRead(40);
+  Serial.println(current);
+  //if (stepclock == 50) {
+
+  
+  if (current != lastread && lastread == 0) {
     for (int y=0; y<8; y++) {
      if (steps[currentstep][y] == 1) {
-      //if (stepchance == 0) {
        pickclip(y);    
-      //}
      } else if (steps[currentstep][y] == 2) {
        if (stepchance == true) {
         pickclip(y);
        }
      }
     }
-    if (currentstep == 7){
+
+    //Serial.println(stepchance);
+
+    if (currentstep == 7) {
+      currentstep = 0;
       if (stepchance == true) {
         stepchance = false;
       } else if (stepchance == false){
         stepchance = true;
       }
-    }
-
-    Serial.println(stepchance);
-
-    if (currentstep == 7) {
-      currentstep = 0;
     } else {
       currentstep = currentstep + 1;
     }
     
-    stepclock = 0;
+    //stepclock = 0;
+    
   }
    
   myusb.Task();
@@ -116,6 +154,7 @@ void loop() {
     }
   }
   
+  lastread = current;
 }
 
 /*
@@ -125,21 +164,21 @@ void loop() {
 
 void pickclip(byte inst){
   if (inst == 0) {
-    playFile("KICK.WAV");   
+    playWav1.play("KICK.WAV"); 
   } else if (inst == 1) {
-    playFile("SNARE.WAV");   
+    playWav2.play("SNARE.WAV");  
   } else if (inst == 2) {
-    playFile("OHAT.WAV");   
+    playWav3.play("OHAT.WAV");  
   } else if (inst == 3) {
-    playFile("CHAT.WAV");   
+    playWav4.play("CHAT.WAV");  
   } else if (inst == 4) {
-    playFile("KICK.WAV");   
+    playWav5.play("KICK.WAV");  
   } else if (inst == 5) {
-    playFile("HTOM.WAV");   
+    playWav6.play("HTOM.WAV"); 
   } else if (inst == 6) {
-    playFile("MTOM.WAV");   
+    playWav7.play("MTOM.WAV");    
   } else if (inst == 7) {
-    playFile("LTOM.WAV");   
+    playWav8.play("LTOM.WAV");    
   }
 }
 
