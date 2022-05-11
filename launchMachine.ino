@@ -22,9 +22,9 @@ AudioPlaySdWav           playWav1; //xy=209,253
 AudioMixer4              mixer4; //xy=407,510
 AudioMixer4              mixer2; //xy=414,344
 AudioMixer4              mixer3; //xy=414,419
-AudioMixer4              mixer1;         //xy=416,274
+AudioMixer4              mixer1; //xy=416,274
 AudioMixer4              mixer5; //xy=630,386
-AudioOutputI2S           i2s1;           //xy=797,402
+AudioOutputI2S           i2s1;   //xy=797,402
 AudioConnection          patchCord1(playWav6, 0, mixer3, 2);
 AudioConnection          patchCord2(playWav6, 1, mixer3, 3);
 AudioConnection          patchCord3(playWav7, 0, mixer4, 0);
