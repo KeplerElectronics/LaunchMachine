@@ -106,14 +106,14 @@ void setup() {
 }
 
 void loop() {
-  stepclock = stepclock+1;
+  //stepclock = stepclock+1;
   byte current;
   current = digitalRead(40);
-  Serial.println(current);
+  //Serial.println(current*1000000000000000);
   //if (stepclock == 50) {
 
   
-  if (current != lastread && lastread == 0) {
+  if (current == 1 && lastread == 0) {
     for (int y=0; y<8; y++) {
      if (steps[currentstep][y] == 1) {
        pickclip(y);    
@@ -193,6 +193,13 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   Serial.print(", velocity=");
   Serial.println(velocity, DEC);*/
 
+  //delay to nudge time if it plays "syncopated"
+  if (note == 89){
+    Serial.println("Delay");
+    delay(100);
+    
+  }
+  
   //breaking these conversion statements somehow crashes the serial output, not sure how, it just does
   int x = note - ((floor(note/10)) * 10) - 1;
   int y = ((floor(note/10)) * 10 - 10)/10;
@@ -208,7 +215,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
     steps[x][y] = 0;  
   }
   
-  //Serial.println((steps[x][y]));
+  Serial.println(note);
 }
 
 void playFile(const char *filename)
